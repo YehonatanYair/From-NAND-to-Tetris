@@ -1,0 +1,316 @@
+/**
+ * A graphical Dinosaur. Displayed by a bitmap. 
+ * Has methods for drawing, erasing, running animation, jumping and detecting collisions. 
+ */
+class Dinosaur{
+	field int xpos, D_Height, D_Width, currentHeight, currentJumpSpeed, Ground_Height;
+	field boolean jumping, leftLeg, JchangeDirection;
+	
+	/** Constructs a new dinosaur. */
+	constructor Dinosaur new(){
+		let xpos = 30;
+		let D_Height = 32;
+		let D_Width = 32;
+		let Ground_Height = 240;
+		let currentHeight = Ground_Height - D_Height + 16;
+		let currentJumpSpeed = 0;
+		let jumping = false;
+		let JchangeDirection = false;
+		let leftLeg = false;
+		do draw();
+		return this;
+	}
+	
+	/** Deallocates the dinosaur's memory. */
+	method void dispose(){
+		do Memory.deAlloc(this);
+		return;
+	}
+	
+	/** drawing running animation by switching between legs that go up and down.*/
+	method void runAnimation(){
+		var int memAddress;
+		if(~jumping & leftLeg){
+			// Drawing left leg up
+			// left leg up
+			let memAddress = 16384 + (xpos/16) + (currentHeight*32);//left
+			do Memory.poke(memAddress+256, 1792);
+			do Memory.poke(memAddress+288, 7936);
+			do Memory.poke(memAddress+320, 7936);
+			do Memory.poke(memAddress+352, 0);
+			do Memory.poke(memAddress+384, 0);
+			do Memory.poke(memAddress+416, 0);
+			do Memory.poke(memAddress+448, 0);
+			do Memory.poke(memAddress+480, 0);
+			// right leg on ground
+			let memAddress = 16384 + ((xpos+16)/16) + (currentHeight*32);//right
+			do Memory.poke(memAddress+288, 15);
+			do Memory.poke(memAddress+320, 12);
+			do Memory.poke(memAddress+352, 12);
+			do Memory.poke(memAddress+384, 12);
+			do Memory.poke(memAddress+416, 12);
+			do Memory.poke(memAddress+448, 60);
+			do Memory.poke(memAddress+480, 60);
+		}
+		if(~jumping & ~leftLeg){
+			// Drawing right leg up
+			// right leg up
+			let memAddress = 16384 + ((xpos+16)/16) + (currentHeight*32);//right
+			do Memory.poke(memAddress+288, 255);
+			do Memory.poke(memAddress+320, 240);
+			do Memory.poke(memAddress+352, 0);
+			do Memory.poke(memAddress+384, 0);
+			do Memory.poke(memAddress+416, 0);
+			do Memory.poke(memAddress+448, 0);
+			do Memory.poke(memAddress+480, 0);
+			//left leg on ground
+			let memAddress = 16384 + (xpos/16) + (currentHeight*32);//left
+			do Memory.poke(memAddress+256, 16128);
+			do Memory.poke(memAddress+288, 16128);
+			do Memory.poke(memAddress+320, 3840);
+			do Memory.poke(memAddress+352, 3840);
+			do Memory.poke(memAddress+384, 768);
+			do Memory.poke(memAddress+416, 768);
+			do Memory.poke(memAddress+448, 3840);
+			do Memory.poke(memAddress+480, 3840);
+			let leftLeg = true;
+			return;
+		}
+		let leftLeg = false;
+		return;
+	}
+
+	/**Detecting a collision with a cactus, indicating death and game over.*/
+	method boolean collision(Cactus cactus){
+		var int cactus_x, cactus_y, cactus_Height, cactus_Width, margin;
+		var boolean collision;
+		let collision = false;
+		let cactus_x = cactus.getCurrentPosition();
+		let cactus_Width = cactus.getWidth();
+		let cactus_Height = cactus.getHeight();
+		let cactus_y = Ground_Height - cactus_Height;
+		//checks if the dinosaur shares the same space as the cactus, indicating a collision.
+		if((cactus_x < (xpos + D_Width)) & (cactus_x > (xpos - cactus_Width)) & ((currentHeight + D_Height) > cactus_y)){
+			let collision = true;
+			do drawDead();
+		}
+		return collision;
+	}
+	
+	/**After the user pressed 'space', TREX class calls this function to start the jump process.*/
+	method void initiateJump(){
+		if(~jumping){
+			let jumping = true;
+			let JchangeDirection = false;
+			let currentJumpSpeed = 32;
+		}
+		return;
+	}
+	
+	/**A getter letting TREX class know if the dinosaur is currently jumping.*/
+	method boolean isJumping(){
+		return jumping;
+	}
+	
+	/**Dinosaur jumping.*/
+	method void jumping(){
+		do erase();
+		//if reached the peak of the jump, change direction.
+		if(currentJumpSpeed = 0){
+			let JchangeDirection = true;
+		}
+		if(JchangeDirection){
+			let currentHeight = currentHeight + currentJumpSpeed;
+			let currentJumpSpeed = currentJumpSpeed + 6;
+		}
+		else{
+			let currentHeight = currentHeight - currentJumpSpeed;
+			let currentJumpSpeed = currentJumpSpeed - 6;
+		}
+		//if passed the ground going back, finish the jump.
+		if(currentHeight > (Ground_Height - D_Height + 16)){
+			let currentHeight = Ground_Height - D_Height + 16;
+			let currentJumpSpeed = 0;
+			let jumping = false;
+		}
+		do draw();
+		return;
+	}
+	
+	/** Draws the Dinosaur, shich is made from 4 16*16 bitmap images.*/
+	method void draw() {
+		var int memAddress;
+		//adding the base address of the screen memory map, 16384, and the location on the screen
+		let memAddress = 16384 + (xpos/16) + (currentHeight*32);
+		//bottom-left
+		do Memory.poke(memAddress+0, -4);
+		do Memory.poke(memAddress+32, -4);
+		do Memory.poke(memAddress+64, -4);
+		do Memory.poke(memAddress+96, -4);
+		do Memory.poke(memAddress+128, -16);
+		do Memory.poke(memAddress+160, -16);
+		do Memory.poke(memAddress+192, -64);
+		do Memory.poke(memAddress+224, -64);
+		do Memory.poke(memAddress+256, 16128);
+		do Memory.poke(memAddress+288, 16128);
+		do Memory.poke(memAddress+320, 3840);
+		do Memory.poke(memAddress+352, 3840);
+		do Memory.poke(memAddress+384, 768);
+		do Memory.poke(memAddress+416, 768);
+		do Memory.poke(memAddress+448, 3840);
+		do Memory.poke(memAddress+480, 3840);
+		//bottom-right
+		let memAddress = 16384 + ((xpos+16)/16) + (currentHeight*32);
+		do Memory.poke(memAddress+0, 511);
+		do Memory.poke(memAddress+32, 511);
+		do Memory.poke(memAddress+64, 255);
+		do Memory.poke(memAddress+96, 255);
+		do Memory.poke(memAddress+128, 63);
+		do Memory.poke(memAddress+160, 63);
+		do Memory.poke(memAddress+192, 15);
+		do Memory.poke(memAddress+224, 15);
+		do Memory.poke(memAddress+256, 15);
+		do Memory.poke(memAddress+288, 15);
+		do Memory.poke(memAddress+320, 12);
+		do Memory.poke(memAddress+352, 12);
+		do Memory.poke(memAddress+384, 12);
+		do Memory.poke(memAddress+416, 12);
+		do Memory.poke(memAddress+448, 60);
+		do Memory.poke(memAddress+480, 60);
+		//top-left
+		let memAddress = 16384 + (xpos/16) + ((currentHeight-16)*32);
+		do Memory.poke(memAddress+0, 0);
+		do Memory.poke(memAddress+32, 0);
+		do Memory.poke(memAddress+64, 0);
+		do Memory.poke(memAddress+96, 0);
+		do Memory.poke(memAddress+128, 0);
+		do Memory.poke(memAddress+160, 0);
+		do Memory.poke(memAddress+192, 0);
+		do Memory.poke(memAddress+224, 0);
+		do Memory.poke(memAddress+256, 12);
+		do Memory.poke(memAddress+288, 12);
+		do Memory.poke(memAddress+320, 12);
+		do Memory.poke(memAddress+352, 12);
+		do Memory.poke(memAddress+384, -16324);
+		do Memory.poke(memAddress+416, -16324);
+		do Memory.poke(memAddress+448, -3076);
+		do Memory.poke(memAddress+480, -4);
+		//top-right
+		let memAddress = 16384 + ((xpos+16)/16) + ((currentHeight-16)*32);
+		do Memory.poke(memAddress+0, 16368);
+		do Memory.poke(memAddress+32, 16368);
+		do Memory.poke(memAddress+64, -100);
+		do Memory.poke(memAddress+96, -100);
+		do Memory.poke(memAddress+128, -4);
+		do Memory.poke(memAddress+160, -4);
+		do Memory.poke(memAddress+192, -4);
+		do Memory.poke(memAddress+224, 1020);
+		do Memory.poke(memAddress+256, 1020);
+		do Memory.poke(memAddress+288, 16380);
+		do Memory.poke(memAddress+320, 511);
+		do Memory.poke(memAddress+352, 511);
+		do Memory.poke(memAddress+384, 511);
+		do Memory.poke(memAddress+416, 8191);
+		do Memory.poke(memAddress+448, 6655);
+		do Memory.poke(memAddress+480, 6655);
+		return;
+	}
+	
+	/** Erases the Dinosaur. Works just like the draw function, but drawing white instead of black. */
+	method void erase() {
+		var int memAddress1, memAddress2, memAddress3, memAddress4, iterator;
+		let memAddress1 = 16384 + (xpos/16) + (currentHeight*32);
+		let memAddress2 = 16384 + ((xpos+16)/16) + (currentHeight*32);
+		let memAddress3 = 16384 + (xpos/16) + ((currentHeight-16)*32);
+		let memAddress4 = 16384 + ((xpos+16)/16) + ((currentHeight-16)*32);
+		
+		let iterator = 0;
+		while(iterator < 481){
+			do Memory.poke(memAddress1+iterator, 0);
+			do Memory.poke(memAddress2+iterator, 0);
+			do Memory.poke(memAddress3+iterator, 0);
+			do Memory.poke(memAddress4+iterator, 0);
+			let iterator = iterator + 32;
+		}
+		return;
+	}
+	
+	/** Draws the Dinosaur surprised after it got hit. */
+	method void drawDead() {
+		// Drawing the entire dinosaur again becuase he can be earased a bit from the collision with the cactus.
+		var int memAddress;
+		let memAddress = 16384 + (xpos/16) + (currentHeight*32);
+		//bottom-left
+		do Memory.poke(memAddress+0, -4);
+		do Memory.poke(memAddress+32, -4);
+		do Memory.poke(memAddress+64, -4);
+		do Memory.poke(memAddress+96, -4);
+		do Memory.poke(memAddress+128, -16);
+		do Memory.poke(memAddress+160, -16);
+		do Memory.poke(memAddress+192, -64);
+		do Memory.poke(memAddress+224, -64);
+		do Memory.poke(memAddress+256, 16128);
+		do Memory.poke(memAddress+288, 16128);
+		do Memory.poke(memAddress+320, 3840);
+		do Memory.poke(memAddress+352, 3840);
+		do Memory.poke(memAddress+384, 768);
+		do Memory.poke(memAddress+416, 768);
+		do Memory.poke(memAddress+448, 3840);
+		do Memory.poke(memAddress+480, 3840);
+		//bottom-right
+		let memAddress = 16384 + ((xpos+16)/16) + (currentHeight*32);
+		do Memory.poke(memAddress+0, 511);
+		do Memory.poke(memAddress+32, 511);
+		do Memory.poke(memAddress+64, 255);
+		do Memory.poke(memAddress+96, 255);
+		do Memory.poke(memAddress+128, 63);
+		do Memory.poke(memAddress+160, 63);
+		do Memory.poke(memAddress+192, 15);
+		do Memory.poke(memAddress+224, 15);
+		do Memory.poke(memAddress+256, 15);
+		do Memory.poke(memAddress+288, 15);
+		do Memory.poke(memAddress+320, 12);
+		do Memory.poke(memAddress+352, 12);
+		do Memory.poke(memAddress+384, 12);
+		do Memory.poke(memAddress+416, 12);
+		do Memory.poke(memAddress+448, 60);
+		do Memory.poke(memAddress+480, 60);
+		//top-left
+		let memAddress = 16384 + (xpos/16) + ((currentHeight-16)*32);
+		do Memory.poke(memAddress+0, 0);
+		do Memory.poke(memAddress+32, 0);
+		do Memory.poke(memAddress+64, 0);
+		do Memory.poke(memAddress+96, 0);
+		do Memory.poke(memAddress+128, 0);
+		do Memory.poke(memAddress+160, 0);
+		do Memory.poke(memAddress+192, 0);
+		do Memory.poke(memAddress+224, 0);
+		do Memory.poke(memAddress+256, 12);
+		do Memory.poke(memAddress+288, 12);
+		do Memory.poke(memAddress+320, 12);
+		do Memory.poke(memAddress+352, 12);
+		do Memory.poke(memAddress+384, -16324);
+		do Memory.poke(memAddress+416, -16324);
+		do Memory.poke(memAddress+448, -3076);
+		do Memory.poke(memAddress+480, -4);
+		//top-rigth: Surprised Face
+		let memAddress = 16384 + ((xpos+16)/16) + ((currentHeight-16)*32);
+		do Memory.poke(memAddress+0, 16368);
+		do Memory.poke(memAddress+32, 16368);
+		do Memory.poke(memAddress+64, -228);
+		do Memory.poke(memAddress+96, -164);
+		do Memory.poke(memAddress+128, -228);
+		do Memory.poke(memAddress+160, -4);
+		do Memory.poke(memAddress+192, -4);
+		do Memory.poke(memAddress+224, 32764);
+		do Memory.poke(memAddress+256, 508);
+		do Memory.poke(memAddress+288, 508);
+		do Memory.poke(memAddress+320, 511);
+		do Memory.poke(memAddress+352, 511);
+		do Memory.poke(memAddress+384, 511);
+		do Memory.poke(memAddress+416, 8191);
+		do Memory.poke(memAddress+448, 6655);
+		do Memory.poke(memAddress+480, 6655);
+		return;
+	}
+}

@@ -1,0 +1,172 @@
+/**
+ * A graphical Cactus. Displayed by a bitmap. 
+ * Has methods for drawing, erasing and moving left. 
+ */
+class Cactus{
+	field int currentPosition, type, height, width, Ground_Height;
+	
+	/** Constructs a new cactus from a given type. one big cactus, or three little ones. */
+	constructor Cactus new(int t){
+		let type = t; 
+		let Ground_Height = 240;
+		if(type =1){
+			let currentPosition = 511;
+			let height = 32;
+			let width = 16;
+		}
+		else{ // type = 2
+			let currentPosition = 495;
+			let height = 16;
+			let width = 32;
+		}
+		do draw();
+		return this;
+	}
+	
+	/** Deallocates the cactus's memory. */
+	method void dispose(){
+		do Memory.deAlloc(this);
+		return;
+	}
+	
+	/** Making the cactus move leftwards, dictated by a given speed*/
+	method void move(int speed){
+		do erase();
+		let currentPosition = currentPosition - speed;
+		do draw();
+		return;
+	}
+	
+	/** A getter, returning the cactus height. */
+	method int getHeight(){
+		return height;
+	}
+	
+	/** A getter, returning the cactus width. */
+	method int getWidth(){
+		return width;
+	}
+	
+	/** A getter, returning the cactus currentPosition. */
+	method int getCurrentPosition(){
+		return currentPosition;
+	}
+	
+	/** Picking how to draw the cactus by it's type. */
+	method void draw(){
+		if(type = 1){
+			do drawType1();
+			return;
+		}
+		else{ // type = 2
+			do drawType2();
+			return;
+		}
+	}
+	
+	/** Drawing one big cactus. */
+	method void drawType1(){
+		var int memAddress;
+		let memAddress = 16384 + (currentPosition/16) + ((Ground_Height-height+16)*32);
+		//bottom part
+		do Memory.poke(memAddress+0, 32743);
+		do Memory.poke(memAddress+32, 8167);
+		do Memory.poke(memAddress+64, 4094);
+		do Memory.poke(memAddress+96, 2044);
+		do Memory.poke(memAddress+128, 1016);
+		do Memory.poke(memAddress+160, 992);
+		do Memory.poke(memAddress+192, 992);
+		do Memory.poke(memAddress+224, 992);
+		do Memory.poke(memAddress+256, 992);
+		do Memory.poke(memAddress+288, 992);
+		do Memory.poke(memAddress+320, 992);
+		do Memory.poke(memAddress+352, 992);
+		do Memory.poke(memAddress+384, 992);
+		do Memory.poke(memAddress+416, 992);
+		do Memory.poke(memAddress+448, 992);
+		do Memory.poke(memAddress+480, 992);
+		//top part
+		let memAddress = 16384 + (currentPosition/16) + ((Ground_Height-height)*32);
+		do Memory.poke(memAddress+0, 448);
+		do Memory.poke(memAddress+32, 992);
+		do Memory.poke(memAddress+64, 992);
+		do Memory.poke(memAddress+96, 992);
+		do Memory.poke(memAddress+128, 992);
+		do Memory.poke(memAddress+160, 25568);
+		do Memory.poke(memAddress+192, -3104);
+		do Memory.poke(memAddress+224, -3102);
+		do Memory.poke(memAddress+256, -3097);
+		do Memory.poke(memAddress+288, -3097);
+		do Memory.poke(memAddress+320, -3097);
+		do Memory.poke(memAddress+352, -3097);
+		do Memory.poke(memAddress+384, -3097);
+		do Memory.poke(memAddress+416, -3097);
+		do Memory.poke(memAddress+448, -3097);
+		do Memory.poke(memAddress+480, 31719);
+		
+		return;
+	}
+	
+	/** Drawing three little cacti. */
+	method void drawType2(){
+		var int memAddress;
+		let memAddress = 16384 + (currentPosition/16) + ((Ground_Height-height)*32);
+		//left side
+		do Memory.poke(memAddress+0, -32752);
+		do Memory.poke(memAddress+32, -16328);
+		do Memory.poke(memAddress+64, -16328);
+		do Memory.poke(memAddress+96, -16328);
+		do Memory.poke(memAddress+128, -15560);
+		do Memory.poke(memAddress+160, -15560);
+		do Memory.poke(memAddress+192, -9413);
+		do Memory.poke(memAddress+224, -9413);
+		do Memory.poke(memAddress+256, -9413);
+		do Memory.poke(memAddress+288, -9797);
+		do Memory.poke(memAddress+320, -9989);
+		do Memory.poke(memAddress+352, -12230);
+		do Memory.poke(memAddress+384, -8132);
+		do Memory.poke(memAddress+416, -16328);
+		do Memory.poke(memAddress+448, -16328);
+		do Memory.poke(memAddress+480, -16328);
+		//right side
+		let memAddress = 16384 + ((currentPosition+16)/16) + ((Ground_Height-height)*32);
+		do Memory.poke(memAddress+0, 1024);
+		do Memory.poke(memAddress+32, 3585);
+		do Memory.poke(memAddress+64, 3585);
+		do Memory.poke(memAddress+96, 3585);
+		do Memory.poke(memAddress+128, -12775);
+		do Memory.poke(memAddress+160, -12775);
+		do Memory.poke(memAddress+192, -12583);
+		do Memory.poke(memAddress+224, -12583);
+		do Memory.poke(memAddress+256, -12583);
+		do Memory.poke(memAddress+288, 28365);
+		do Memory.poke(memAddress+320, 16071);
+		do Memory.poke(memAddress+352, 3713);
+		do Memory.poke(memAddress+384, 3841);
+		do Memory.poke(memAddress+416, 3585);
+		do Memory.poke(memAddress+448, 3585);
+		do Memory.poke(memAddress+480, 3585);
+		return;
+		}
+		
+	/** Erasing the cactus/cacti. */
+	method void erase(){
+		var int memAddress1, memAddress2, iterator;
+		if(type = 1){
+			let memAddress1 = 16384 + (currentPosition/16) + ((Ground_Height-height+16)*32);
+			let memAddress2 = 16384 + (currentPosition/16) + ((Ground_Height-height)*32);
+		}
+		else{ // type = 2
+			let memAddress1 = 16384 + (currentPosition/16) + ((Ground_Height-height)*32);
+			let memAddress2 = 16384 + ((currentPosition+16)/16) + ((Ground_Height-height)*32);
+		}
+		
+		let iterator = 0;
+		while(iterator < 481){
+			do Memory.poke(memAddress1+iterator, 0);
+			do Memory.poke(memAddress2+iterator, 0);
+			let iterator = iterator + 32;
+		}	
+		return;
+	}
+}

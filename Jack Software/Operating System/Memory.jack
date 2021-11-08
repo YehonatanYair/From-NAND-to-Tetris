@@ -1,0 +1,82 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/12/Memory.jack
+
+/**
+ * This library provides two services: direct access to the computer's main
+ * memory (RAM), and allocation and recycling of memory blocks. The Hack RAM
+ * consists of 32,768 words, each holding a 16-bit binary number.
+ */ 
+class Memory {
+	static Array ram, heap;
+
+    /** Initializes the class. */
+    function void init() {
+		let ram = 0;
+		let heap = 2048;
+		let heap[0] = 14334;
+		return;
+    }
+
+    /** Returns the RAM value at the given address. */
+    function int peek(int address) {
+		return ram[address];
+    }
+
+    /** Sets the RAM value at the given address to the given value. */
+    function void poke(int address, int value) {
+		let ram[address] = value;
+		return;
+    }
+
+    /** Finds an available RAM block of the given size and returns
+     *  a reference to its base address. */
+    function int alloc(int size) {
+		var int effectiveSize, next;
+		if(size < 1){
+			do Sys.error(41);
+		}
+		let effectiveSize = size + 2;
+		//searching "freeList"
+		while(ram[heap] < size){
+			let next = heap + 1;
+			let heap = ram[next];
+		}
+		let next = heap + 1;
+		// if found a segment. if not, failure
+		if(ram[heap] > effectiveSize){
+			// updating the "freeList" and "block"
+			let ram[heap + effectiveSize] = ram[heap] - effectiveSize;
+			if(ram[next] = (heap + 2)){
+				let ram[effectiveSize + 1] = effectiveSize + heap + 2;
+			}
+			else{
+			let ram[next + effectiveSize] = ram[next];
+			}
+			let ram[next] = heap + effectiveSize;
+		}
+		else{
+			do Sys.error(42);
+		}
+		let ram[heap] = 0;
+		return heap + 2;
+    }
+
+    /** De-allocates the given object (cast as an array) by making
+     *  it available for future allocations. */
+    function void deAlloc(Array o) {
+		var Array blockN, blockS, blockD;
+		let blockN = o - 2;
+		let blockS = blockN[1];
+		let blockD = blockS[1];
+		if(blockS[0] = 0){
+			let blockN[0] = blockN[1] - blockN - 2;
+		}
+		else{
+			let blockN[0] = blockN[1] - blockN + blockS[0];
+			let blockN[1] = blockD;
+		}
+		return;
+    }    
+}

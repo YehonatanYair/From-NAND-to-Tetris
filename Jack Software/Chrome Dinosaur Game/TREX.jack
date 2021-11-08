@@ -1,0 +1,219 @@
+/**
+ * Represents a TREX game.
+ */
+class TREX{
+	field Dinosaur dinosaur;
+	field int speed, score, GameIterNum, cactusType, num_of_cacti;
+	field boolean space_pressed, game_over, raised_speed;
+	field Array cacti;
+	
+	/** Constructs a new TREX game. */
+	constructor TREX new(){
+		let dinosaur = Dinosaur.new();
+		let GameIterNum = 1;
+		let cactusType = 1;
+		let speed = 10;
+		let score = 0;
+		let num_of_cacti = 0;
+		let cacti = Array.new(5);
+		let space_pressed = false;
+		let game_over = false;
+		let raised_speed = false;
+		return this;
+	}
+	
+	/** Deallocates the game's instance memory. */
+	method void dispose(){
+		do dinosaur.dispose();
+		do disposeCactiArray();
+		do Memory.deAlloc(this);
+		return;
+	}
+	
+	/** Deallocates the cactus elements in the array, and then the array itself. */
+	method void disposeCactiArray(){
+		var int iterator;
+		var Cactus currentCactus;
+		let iterator = 0;
+		while(iterator < num_of_cacti){
+			let currentCactus = cacti[iterator];
+			do currentCactus.dispose();
+			let iterator = iterator + 1;
+		}
+		do cacti.dispose();
+		return;
+	}
+	
+	/** Setting up the game and waiting for the player to start. */
+	method void initializeGame(){
+		//Drawing the ground baseline
+		do Screen.setColor(true);
+		do Screen.drawLine(0, 240, 511, 240);
+		// printing a beginning score of 0
+		do Output.moveCursor(0, 63);
+		do Output.printInt(score);
+		//writing text on screen asking the player to press the spacebar
+		do Output.moveCursor(11, 20);
+		do Output.printString("Press 'space' to start");
+		//Listenning for a spacebar press
+		while(~(space_pressed)){
+			do spaceKeyListener();		
+		}
+		// Deleting the spacebar text
+		do Output.moveCursor(11, 20);
+		do Output.printString("                      ");
+		return;
+	}
+	
+	/** Checks if the spacebar was pressed. */
+	method void spaceKeyListener(){
+		var int key_pressed;
+		let key_pressed = Keyboard.keyPressed();
+		if(key_pressed = 32){
+			let space_pressed = true;
+		}
+		else{
+			let space_pressed = false;
+		}
+		return;
+	}
+	
+	/** Updates Score */
+	method void updateScore(){
+		let score = score + 1;
+		let raised_speed = false;
+		if(score > 99){
+			do Output.moveCursor(0, 61);
+			do Output.printInt(score);
+			return;
+		}
+		if(score > 9){
+			do Output.moveCursor(0, 62);
+			do Output.printInt(score);
+			return;
+		}
+		do Output.moveCursor(0, 63);
+		do Output.printInt(score);
+		return;
+	}
+	
+	/** Creates a cactus and adds in to the array*/
+	method void addCactus(){
+		if(num_of_cacti < 5){
+			let cacti[num_of_cacti] = Cactus.new(cactusType);
+			let num_of_cacti = num_of_cacti + 1;
+		}
+		return;
+	}
+	
+	/** Move all cacti leftward, deleting cacti that reached the end. */
+	method void moveCacti(){
+		var int iterator, temp;
+		var Cactus currentCactus;
+		let iterator = 0;
+		while(iterator < num_of_cacti){
+			let currentCactus = cacti[iterator];
+			do currentCactus.move(speed);
+			//if a cactus reach the left corner, delete it, and update score.
+			if(currentCactus.getCurrentPosition() < 0){
+				let temp = iterator;
+				let num_of_cacti = num_of_cacti - 1;
+				do currentCactus.erase();
+				do currentCactus.dispose();
+				while(iterator < num_of_cacti){
+					let cacti[iterator] = cacti[iterator+1];
+					let iterator = iterator + 1;
+				}
+				let cacti[iterator] = null;
+				let iterator = temp;
+				do updateScore();
+			}
+			else{
+				let iterator = iterator + 1;
+			}
+		}
+		return;
+	}
+	
+	/** Calculated Modulo. */
+	method int modulo(int x, int y){
+		return (x-((x/y)*y));
+	}
+	
+	/** Used whether or not the character is jumping as a random variabel, since it's controlled by the player. */
+	method int random(){
+		if(dinosaur.isJumping()){
+			return 2;
+		}
+		return 1;
+	}
+	
+	/** Keeps the game going by updating everything. movement of player and environment, score, and checks for game over. */
+	method void play(){
+		var Cactus frontCactus;
+		var int randomValue;
+		// Checks for input of spacebar
+		do spaceKeyListener();
+		if(space_pressed & ~dinosaur.isJumping()){
+			do dinosaur.initiateJump();
+		}
+		
+		// Changing animation every few iterations on  play
+		if(modulo(GameIterNum,4) = 0){
+			do dinosaur.runAnimation();
+		}
+		
+		let randomValue = random(); 
+		let cactusType = randomValue;
+		
+		// Adding a cactus at a somewhat random time. more of a random feel.
+		if(modulo(GameIterNum,randomValue*18) = 0){
+			do addCactus();
+		}
+		
+		//gradually increase speed as the score gets higher. Also adds a cactus to make cactai appearance feel more random.
+		if(modulo(score,5) = 0 & ~(raised_speed)){
+			do addCactus();
+			if(speed < 30){
+				let speed = speed + 2;
+				let raised_speed = true;
+			}
+		}
+		
+		// Manage dinosaur's jumping
+		if(dinosaur.isJumping()){
+			do dinosaur.jumping();
+		}
+		
+		// Move all Cacti
+		if(~(num_of_cacti = 0)){
+			do moveCacti();
+		}
+		
+		// If there is a collision, End game.
+		if(~(num_of_cacti = 0)){
+			let frontCactus = cacti[0];
+			if(dinosaur.collision(frontCactus)){
+				let game_over = true;
+			}
+		}
+		
+		let GameIterNum = GameIterNum + 1;
+		do Sys.wait(50);
+		return;
+	}
+	
+	/** Starts the game, keeps it going, and finishing it. */
+	method void run(){
+		// Initialize game
+		do initializeGame();
+		// Running the game
+		while(~game_over){
+			do play();	
+		}
+		// Game over. Printing "Game Over" and returning.
+		do Output.moveCursor(11, 22);
+		do Output.printString("G A M E    O V E R");
+		return;
+	}
+}
