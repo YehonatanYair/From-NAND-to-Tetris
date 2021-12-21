@@ -20,6 +20,6 @@ CHIP Computer {
 
     PARTS:
 	ROM32K(address=addOfNextInst ,out=romInst );
-    CPU(inM=fromMemory ,instruction=romInst ,reset=reset ,outM=outToMemory ,writeM=memoryWriteEnable ,addressM=MemoryAddress ,pc=addOfNextInst );
+	CPU(inM=fromMemory ,instruction=romInst ,reset=reset ,outM=outToMemory ,writeM=memoryWriteEnable ,addressM=MemoryAddress ,pc=addOfNextInst );
 	Memory(in=outToMemory ,load=memoryWriteEnable ,address=MemoryAddress ,out=fromMemory );
 }

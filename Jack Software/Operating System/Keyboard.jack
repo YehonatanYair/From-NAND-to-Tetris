@@ -10,7 +10,7 @@ class Keyboard {
 
     /** Initializes the keyboard. */
     function void init() {
-		return;
+        return;
     } 
 
     /**
@@ -34,7 +34,7 @@ class Keyboard {
      * F1 - F12 = 141 - 152
      */
     function char keyPressed() {
-		return Memory.peek(24576);
+        return Memory.peek(24576);
     }
 
     /**								
@@ -43,17 +43,17 @@ class Keyboard {
      * of the pressed key.
      */
     function char readChar() {
-		var char c, savedKey; 
-		do Output.printChar(0);
-		while((savedKey = 0) | (c > 0)){
-			let c = Keyboard.keyPressed();
-			if(c > 0){
-				let savedKey = c;
-			}
-		}
-		do Output.printChar(String.backSpace());
-		do Output.printChar(savedKey);
-		return savedKey;
+        var char c, savedKey; 
+        do Output.printChar(0);
+        while((savedKey = 0) | (c > 0)){
+            let c = Keyboard.keyPressed();
+            if(c > 0){
+                let savedKey = c;
+            }
+        }
+        do Output.printChar(String.backSpace());
+        do Output.printChar(savedKey);
+        return savedKey;
     }
 
     /**								
@@ -62,29 +62,29 @@ class Keyboard {
      * and returns its value. Also handles user backspaces.
      */
     function String readLine(String message) {
-		var char c, nl, bs;
-		var String str;
-		var boolean fin;
-		let str = String.new(100);
-		do Output.printString(message);
-		let nl = String.newLine();
-		let bs = String.backSpace();
-		while(~fin){
-			let c = Keyboard.readChar();
-			let fin = (c = nl);
-			if(~fin){
-				if(c = bs){
-					do str.eraseLastChar();
-					do Output.backSpace();
-				}
-				else{
-					let str = str.appendChar(c);
-				}
-			}
+        var char c, nl, bs;
+        var String str;
+        var boolean fin;
+        let str = String.new(100);
+        do Output.printString(message);
+        let nl = String.newLine();
+        let bs = String.backSpace();
+        while(~fin){
+            let c = Keyboard.readChar();
+            let fin = (c = nl);
+            if(~fin){
+                if(c = bs){
+                    do str.eraseLastChar();
+                    do Output.backSpace();
+                }
+                else{
+                    let str = str.appendChar(c);
+                }
+            }
 			
-		}
-		do Output.printString(str);
-		return str;
+        }
+        do Output.printString(str);
+        return str;
     }   
 
     /**								
@@ -94,11 +94,11 @@ class Keyboard {
      * entered text is detected). Also handles user backspaces. 
      */
     function int readInt(String message) {
-		var String str;
-		var int intVal;
-		let str = Keyboard.readLine(message);
-		let intVal = str.intValue();
-		do str.dispose();
-		return intVal;
+        var String str;
+        var int intVal;
+        let str = Keyboard.readLine(message);
+        let intVal = str.intValue();
+        do str.dispose();
+        return intVal;
     }
 }

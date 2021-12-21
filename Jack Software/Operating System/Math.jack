@@ -11,8 +11,8 @@ class Math {
 
 	static Array powersOf2;
 
-    /** Initializes the library. */
-    function void init() {
+	/** Initializes the library. */
+	function void init() {
 		let powersOf2 = Array.new(16);
 		let powersOf2[0] = 1;
 		let powersOf2[1] = 2;
@@ -31,22 +31,22 @@ class Math {
 		let powersOf2[14] = 16384;
 		let powersOf2[15] = 32767 + 1;
 		return;
-    }
+	}
 
-    /** Returns the absolute value of x. */
-    function int abs(int x) {
+	/** Returns the absolute value of x. */
+	function int abs(int x) {
 		if(x < 0){
 			let x = -x;
 		}
 		return x;
-    }
+	}
 
-    /** Returns the product of x and y. 
-     *  When a Jack compiler detects the multiplication operator '*' in the 
-     *  program's code, it handles it by invoking this method. In other words,
-     *  the Jack expressions x*y and multiply(x,y) return the same value.
-     */
-    function int multiply(int x, int y) {
+	/** Returns the product of x and y. 
+	*  When a Jack compiler detects the multiplication operator '*' in the 
+	*  program's code, it handles it by invoking this method. In other words,
+	*  the Jack expressions x*y and multiply(x,y) return the same value.
+	*/
+	function int multiply(int x, int y) {
 		var int sum, shiftedX, bit, po2; 
 		if((x = 0) | (y = 0)){
 			return 0;
@@ -63,14 +63,14 @@ class Math {
 			let bit = bit + 1;
 		}
 		return sum;
-    }
+	}
 
-    /** Returns the integer part of x/y.
-     *  When a Jack compiler detects the multiplication operator '/' in the 
-     *  program's code, it handles it by invoking this method. In other words,
-     *  the Jack expressions x/y and divide(x,y) return the same value.
-     */
-    function int divide(int x, int y) {
+	/** Returns the integer part of x/y.
+	*  When a Jack compiler detects the multiplication operator '/' in the 
+	*  program's code, it handles it by invoking this method. In other words,
+	*  the Jack expressions x/y and divide(x,y) return the same value.
+	*/
+	function int divide(int x, int y) {
 		var int res, absX, absY;
 		if(y=0){
 			do Sys.error(31);
@@ -88,7 +88,7 @@ class Math {
 			return -res;
 		}
 		return res;
-    }
+	}
 	
 	function int divideAlgo(int x, int y) {
 		var int q;
@@ -102,8 +102,8 @@ class Math {
 		return (q + q + 1);
 	}
 
-    /** Returns the integer part of the square root of x. */
-    function int sqrt(int x) {
+	/** Returns the integer part of the square root of x. */
+	function int sqrt(int x) {
 		var int y, j;
 		if(x < 0){
 			do Sys.error(32);
@@ -118,26 +118,26 @@ class Math {
 			
 		}
 		return y;
-    }
+	}
 
-    /** Returns the greater number. */
-    function int max(int a, int b) {
+	/** Returns the greater number. */
+	function int max(int a, int b) {
 		if(a > b){
 			let b = a;
 		}
 		return b;
-    }
+	}
 
-    /** Returns the smaller number. */
-    function int min(int a, int b) {
+	/** Returns the smaller number. */
+	function int min(int a, int b) {
 		if(a < b){
 			let b = a;
 		}
 		return b;
-    }
+	}
 	
 	/** Returns powersOf2 array. */
-    function Array powersOf2() {
+	function Array powersOf2() {
 		return powersOf2;
-    }
+	}
 }

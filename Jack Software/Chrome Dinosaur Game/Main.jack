@@ -3,10 +3,10 @@
  */
 class Main {
     function void main() {
-		/** Initializes a TREX game and starts running it. */
+	/** Initializes a TREX game and starts running it. */
         var TREX game;
-		let game = TREX.new();
-		do game.run();
+	let game = TREX.new();
+	do game.run();
         do game.dispose();
         return;
     }
